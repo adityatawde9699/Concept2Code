@@ -32,3 +32,18 @@ class Booking(Base):
     status = Column(String, default="active")  # active | completed
     
     slot = relationship("ParkingSlot", back_populates="bookings")
+
+class UserListing(Base):
+    __tablename__ = "user_listings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_email = Column(String, index=True)
+    title = Column(String)
+    location = Column(String)
+    price_per_hour = Column(Float)
+    available_from = Column(DateTime)
+    available_to = Column(DateTime, nullable=True)
+    description = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
+    is_available = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)

@@ -44,6 +44,9 @@ def login(request: Request, email: str = Form(...), name: str = Form(...)):
     user = get_user_by_email(email)
     if not user:
         user = create_mock_user(name, email)
+    else:
+        # Reset vehicle type on new login to force selection
+        update_user_vehicle(email, None)
     
     session_id = create_session(email)
     response = RedirectResponse(url="/vehicle-type", status_code=303)
@@ -74,11 +77,92 @@ def set_vehicle_type(request: Request, session_id: Optional[str] = Cookie(None),
         return RedirectResponse(url="/", status_code=303)
     
     update_user_vehicle(user.email, vehicle_type)
-    return RedirectResponse(url="/find-parking", status_code=303)
+    return RedirectResponse(url="/home", status_code=303)
 
 # ─────────────────────────────────────────
 #  Dashboard
 # ─────────────────────────────────────────
+@app.get("/home", response_class=HTMLResponse)
+def home_dashboard(request: Request, session_id: Optional[str] = Cookie(None)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    return templates.TemplateResponse("home.html", {
+        "request": request,
+        "user": user,
+    })
+
+# ─────────────────────────────────────────
+#  List Parking Feature
+# ─────────────────────────────────────────
+@app.get("/list-parking", response_class=HTMLResponse)
+def list_parking_form(request: Request, session_id: Optional[str] = Cookie(None)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    now_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
+    return templates.TemplateResponse("list-parking.html", {
+        "request": request,
+        "user": user,
+        "now_str": now_str,
+    })
+
+@app.post("/list-parking", response_class=HTMLResponse)
+def create_parking_listing(
+    request: Request,
+    session_id: Optional[str] = Cookie(None),
+    db: Session = Depends(get_db),
+    title: str = Form(...),
+    location: str = Form(...),
+    price_per_hour: float = Form(...),
+    available_from: str = Form(...),
+    available_to: str = Form(""),
+    description: str = Form(""),
+):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    try:
+        available_from_dt = datetime.fromisoformat(available_from)
+    except Exception:
+        available_from_dt = datetime.utcnow()
+    
+    available_to_dt = None
+    if available_to:
+        try:
+            available_to_dt = datetime.fromisoformat(available_to)
+        except Exception:
+            available_to_dt = None
+    
+    # Create listing
+    new_listing = models.UserListing(
+        user_email=user.email,
+        title=title,
+        location=location,
+        price_per_hour=price_per_hour,
+        available_from=available_from_dt,
+        available_to=available_to_dt,
+        description=description,
+    )
+    db.add(new_listing)
+    db.commit()
+    db.refresh(new_listing)
+    
+    return RedirectResponse(url="/listing-success", status_code=303)
+
+@app.get("/listing-success", response_class=HTMLResponse)
+def listing_success(request: Request, session_id: Optional[str] = Cookie(None)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    return templates.TemplateResponse("listing-success.html", {
+        "request": request,
+        "user": user,
+    })
 
 # ─────────────────────────────────────────
 #  Slots Listing

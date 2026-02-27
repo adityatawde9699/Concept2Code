@@ -1,94 +1,58 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — ParkWise{% endblock %}
+{% block title %}Dashboard - ParkWise{% endblock %}
 
 {% block content %}
-<!-- Hero Banner -->
-<div class="hero-banner fade-in-up">
-    <h1>Find Your Parking Spot</h1>
-    <p>Real-time availability across all zones. Reserve a slot in seconds and skip the search.</p>
-    <div style="margin-top:1.5rem; display:flex; gap:0.75rem; flex-wrap:wrap;">
-        <a href="/slots" class="btn btn-primary btn-lg">
-            <i class="fa-solid fa-th-large"></i> Browse Slots
-        </a>
-        <a href="/recommended" class="btn btn-outline btn-lg">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Find Best Slot
-        </a>
+<section class="card border-0 shadow-sm dashboard-hero mb-4">
+    <div class="card-body p-4 p-lg-5">
+        <h1 class="page-title mb-2">Find Your Parking Spot</h1>
+        <p class="text-secondary mb-3">Real-time availability across all zones.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="/slots" class="btn btn-primary">Browse Slots</a>
+            <a href="/recommended" class="btn btn-outline-primary">Find Best Slot</a>
+        </div>
     </div>
+</section>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card border-0 shadow-sm stat-card-lite"><div class="card-body"><p class="small text-secondary mb-1">Total Slots</p><h3 class="mb-0">{{ total_slots }}</h3></div></div></div>
+    <div class="col-md-4"><div class="card border-0 shadow-sm stat-card-lite"><div class="card-body"><p class="small text-secondary mb-1">Available Now</p><h3 class="mb-0 text-success">{{ available }}</h3></div></div></div>
+    <div class="col-md-4"><div class="card border-0 shadow-sm stat-card-lite"><div class="card-body"><p class="small text-secondary mb-1">Occupied</p><h3 class="mb-0 text-danger">{{ occupied }}</h3></div></div></div>
 </div>
 
-<!-- Stats Row -->
-<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:2rem;">
-    <div class="stat-card fade-in-up delay-1" style="--card-accent: #818cf8;">
-        <div class="stat-number count-up" data-target="{{ total_slots }}">{{ total_slots }}</div>
-        <div class="stat-label">Total Slots</div>
-        <div class="stat-icon"><i class="fa-solid fa-square-parking"></i></div>
-    </div>
-    <div class="stat-card fade-in-up delay-2" style="--card-accent: #34d399;">
-        <div class="stat-number count-up" data-target="{{ available }}">{{ available }}</div>
-        <div class="stat-label">Available Now</div>
-        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
-    </div>
-    <div class="stat-card fade-in-up delay-3" style="--card-accent: #f87171;">
-        <div class="stat-number count-up" data-target="{{ occupied }}">{{ occupied }}</div>
-        <div class="stat-label">Occupied</div>
-        <div class="stat-icon"><i class="fa-solid fa-car"></i></div>
-    </div>
-</div>
-
-<!-- Zone Breakdown & Quick Actions -->
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; flex-wrap:wrap;">
-    <!-- Zone Availability -->
-    <div class="glass-card" style="padding:1.75rem;">
-        <h2 style="font-size:1.1rem; font-weight:700; color:var(--text-strong); margin-bottom:1.25rem;">
-            <i class="fa-solid fa-map" style="color:var(--primary-light); margin-right:8px;"></i>Zone Availability
-        </h2>
-        {% for zone, stats in zone_stats.items() %}
-        {% set pct = (stats.occupied / stats.total * 100) | int if stats.total > 0 else 0 %}
-        <div class="zone-progress">
-            <div class="zone-progress-label">
-                <span><strong style="color:var(--text-strong);">Zone {{ zone }}</strong></span>
-                <span>{{ stats.total - stats.occupied }} / {{ stats.total }} free</span>
-            </div>
-            <div class="progress-track">
-                <div class="progress-fill {% if pct > 70 %}high{% elif pct > 40 %}mid{% else %}low{% endif %}"
-                     style="width: {{ pct }}%"></div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Zone Availability</h2>
+                {% for zone, stats in zone_stats.items() %}
+                {% set pct = (stats.occupied / stats.total * 100) | int if stats.total > 0 else 0 %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="fw-semibold">Zone {{ zone }}</span>
+                        <span class="text-secondary">{{ stats.total - stats.occupied }} / {{ stats.total }} free</span>
+                    </div>
+                    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ pct }}">
+                        <div class="progress-bar {% if pct > 70 %}bg-danger{% elif pct > 40 %}bg-warning{% else %}bg-success{% endif %}" style="width: {{ pct }}%"></div>
+                    </div>
+                </div>
+                {% else %}
+                <p class="text-secondary mb-0">No zone data yet.</p>
+                {% endfor %}
             </div>
         </div>
-        {% else %}
-        <p style="color:var(--text-muted);">No zone data yet.</p>
-        {% endfor %}
     </div>
 
-    <!-- Quick Actions -->
-    <div style="display:flex; flex-direction:column; gap:0.75rem;">
-        <p class="section-subtitle" style="margin-bottom:0.5rem;">Quick Actions</p>
-        <a href="/slots" class="quick-action">
-            <div class="quick-action-icon" style="background:rgba(79,70,229,0.15); color:#818cf8;">
-                <i class="fa-solid fa-th-large"></i>
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Quick Actions</h2>
+                <div class="d-grid gap-2">
+                    <a href="/slots" class="btn btn-outline-primary text-start">Browse All Slots</a>
+                    <a href="/recommended" class="btn btn-outline-primary text-start">Get AI Recommendation</a>
+                    <a href="/history" class="btn btn-outline-primary text-start">Parking History</a>
+                </div>
             </div>
-            <div>
-                <div style="font-weight:700; color:var(--text-strong);">Browse All Slots</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">Filter by zone and availability</div>
-            </div>
-        </a>
-        <a href="/recommended" class="quick-action">
-            <div class="quick-action-icon" style="background:rgba(6,182,212,0.15); color:#22d3ee;">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-            </div>
-            <div>
-                <div style="font-weight:700; color:var(--text-strong);">Get AI Recommendation</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">Best slot scored by our algorithm</div>
-            </div>
-        </a>
-        <a href="/history" class="quick-action">
-            <div class="quick-action-icon" style="background:rgba(16,185,129,0.15); color:#34d399;">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-            </div>
-            <div>
-                <div style="font-weight:700; color:var(--text-strong);">Parking History</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">View past and ongoing sessions</div>
-            </div>
-        </a>
+        </div>
     </div>
 </div>
 {% endblock %}

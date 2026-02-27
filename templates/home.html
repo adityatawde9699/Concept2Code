@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ParkWise</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body class="app-body d-flex flex-column">
+    <nav class="navbar navbar-expand-lg app-navbar sticky-top">
+        <div class="container">
+            <a href="/home" class="navbar-brand app-brand">ParkWise</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNav" aria-controls="dashboardNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="dashboardNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a href="/home" class="nav-link">Dashboard</a></li>
+                    <li class="nav-item"><a href="/find-parking" class="nav-link">Find Slot</a></li>
+                    <li class="nav-item"><a href="/list-parking" class="nav-link">List Parking</a></li>
+                    <li class="nav-item"><a href="/history" class="nav-link">History</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge text-bg-light fw-semibold px-3 py-2">{{ user.name }}</span>
+                    <a href="/logout" class="btn btn-sm btn-outline-danger">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container flex-grow-1 py-4 py-lg-5">
+        <section class="dashboard-hero card border-0 shadow-sm mb-4">
+            <div class="card-body p-4 p-lg-5">
+                <h1 class="page-title mb-2">Welcome to ParkWise</h1>
+                <p class="text-secondary mb-0">What would you like to do today?</p>
+            </div>
+        </section>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <a href="/find-parking" class="card border-0 shadow-sm h-100 cta-card-link">
+                    <div class="card-body p-4">
+                        <p class="mb-2 text-primary fw-semibold">Book Parking</p>
+                        <h2 class="h4 mb-2">Find and reserve a slot</h2>
+                        <p class="text-secondary mb-3">Real-time availability and quick booking flow for users.</p>
+                        <ul class="small text-secondary mb-0 ps-3">
+                            <li>Real-time availability</li>
+                            <li>Smart recommendations</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-6">
+                <a href="/list-parking" class="card border-0 shadow-sm h-100 cta-card-link">
+                    <div class="card-body p-4">
+                        <p class="mb-2 text-success fw-semibold">List Parking</p>
+                        <h2 class="h4 mb-2">Publish your parking space</h2>
+                        <p class="text-secondary mb-3">Create a listing and start earning from unused spots.</p>
+                        <ul class="small text-secondary mb-0 ps-3">
+                            <li>Simple listing form</li>
+                            <li>Fast publishing flow</li>
+                        </ul>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-4"><div class="card border-0 shadow-sm stat-card-lite"><div class="card-body"><p class="small text-secondary mb-1">Active Bookings</p><h3 class="mb-0">0</h3></div></div></div>
+            <div class="col-md-4"><div class="card border-0 shadow-sm stat-card-lite"><div class="card-body"><p class="small text-secondary mb-1">Total Hours Parked</p><h3 class="mb-0">0</h3></div></div></div>
+            <div class="col-md-4"><div class="card border-0 shadow-sm stat-card-lite"><div class="card-body"><p class="small text-secondary mb-1">Money Earned</p><h3 class="mb-0">$0</h3></div></div></div>
+        </div>
+    </main>
+
+    <footer class="app-footer mt-auto">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <p class="mb-0">ParkWise Dashboard</p>
+            <p class="mb-0 small">Smart parking showcase demo</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>

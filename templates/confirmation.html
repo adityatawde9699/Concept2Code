@@ -1,91 +1,47 @@
 {% extends "base.html" %}
-{% block title %}Booking Confirmed — ParkWise{% endblock %}
+{% block title %}Booking Confirmed - ParkWise{% endblock %}
 
 {% block content %}
-<div style="max-width:540px; margin:0 auto; text-align:center;" class="fade-in-up">
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6 text-center">
+        <div class="confirm-badge mb-3">✓</div>
+        <h1 class="page-title mb-2">Booking Confirmed</h1>
+        <p class="text-secondary mb-4">Your parking slot is reserved. Show this confirmation on arrival.</p>
 
-    <!-- Success Icon -->
-    <div class="confirm-icon">✅</div>
+        {% if booking %}
+        <div class="card border-0 shadow-sm text-start mb-3">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="small text-secondary text-uppercase">Booking Ref</span>
+                    <span class="fw-bold text-primary">#PWB-{{ "%05d" | format(booking.id) }}</span>
+                </div>
 
-    <h1 style="font-size:2rem; font-weight:800; color:var(--text-strong); margin-bottom:0.5rem;">
-        Booking Confirmed!
-    </h1>
-    <p style="color:var(--text-muted); margin-bottom:2rem;">
-        Your parking slot has been reserved. Show this confirmation on arrival.
-    </p>
-
-    {% if booking %}
-    <!-- Booking Card -->
-    <div class="glass-card" style="padding:2rem; text-align:left; margin-bottom:1.5rem;">
-        <!-- Booking ID tag -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-            <span style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Booking Ref</span>
-            <span style="font-size:0.9rem; font-weight:700; color:var(--primary-light);">#PWB-{{ "%05d" | format(booking.id) }}</span>
+                <div class="confirm-row"><span>Slot</span><strong>{{ booking.slot.slot_number }} - Zone {{ booking.slot.zone }}</strong></div>
+                <div class="confirm-row"><span>Name</span><strong>{{ booking.user_name }}</strong></div>
+                {% if booking.phone_number %}<div class="confirm-row"><span>Phone</span><strong>{{ booking.phone_number }}</strong></div>{% endif %}
+                {% if booking.vehicle_type %}<div class="confirm-row"><span>Vehicle</span><strong>{{ booking.vehicle_type }}{% if booking.vehicle_number %} - {{ booking.vehicle_number }}{% endif %}</strong></div>{% endif %}
+                <div class="confirm-row"><span>Start</span><strong>{{ booking.start_time.strftime('%d %b %Y, %H:%M') }}</strong></div>
+                {% if booking.end_time %}<div class="confirm-row"><span>End</span><strong>{{ booking.end_time.strftime('%d %b %Y, %H:%M') }}</strong></div>{% endif %}
+                {% if booking.total_cost %}<div class="confirm-row"><span>Estimated Cost</span><strong class="text-success">₹{{ "%.2f" | format(booking.total_cost) }}</strong></div>{% endif %}
+                <div class="confirm-row border-0 pb-0"><span>Status</span>
+                    {% if booking.status == 'active' %}
+                    <span class="badge status-pill status-active">Active</span>
+                    {% else %}
+                    <span class="badge status-pill status-completed">Completed</span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
-        <!-- Details -->
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-square-parking" style="margin-right:6px;"></i>Slot</span>
-            <span class="confirm-detail-value">{{ booking.slot.slot_number }} — Zone {{ booking.slot.zone }}</span>
-        </div>
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-user" style="margin-right:6px;"></i>Name</span>
-            <span class="confirm-detail-value">{{ booking.user_name }}</span>
-        </div>
-        {% if booking.phone_number %}
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-phone" style="margin-right:6px;"></i>Phone</span>
-            <span class="confirm-detail-value">{{ booking.phone_number }}</span>
+        <div class="alert alert-primary small text-start" role="alert">
+            Please arrive on time. If you finish early, check out from the History page to free the slot.
         </div>
         {% endif %}
-        {% if booking.vehicle_type %}
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-car" style="margin-right:6px;"></i>Vehicle</span>
-            <span class="confirm-detail-value">
-                {{ booking.vehicle_type }}{% if booking.vehicle_number %} · {{ booking.vehicle_number }}{% endif %}
-            </span>
-        </div>
-        {% endif %}
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-clock" style="margin-right:6px;"></i>Start</span>
-            <span class="confirm-detail-value">{{ booking.start_time.strftime('%d %b %Y, %H:%M') }}</span>
-        </div>
-        {% if booking.end_time %}
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-flag-checkered" style="margin-right:6px;"></i>End</span>
-            <span class="confirm-detail-value">{{ booking.end_time.strftime('%d %b %Y, %H:%M') }}</span>
-        </div>
-        {% endif %}
-        {% if booking.total_cost %}
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-indian-rupee-sign" style="margin-right:6px;"></i>Estimated Cost</span>
-            <span class="confirm-detail-value" style="color:#34d399; font-size:1.1rem;">₹{{ "%.2f" | format(booking.total_cost) }}</span>
-        </div>
-        {% endif %}
-        <div class="confirm-detail-row">
-            <span class="confirm-detail-label"><i class="fa-solid fa-circle-dot" style="margin-right:6px;"></i>Status</span>
-            <span class="status-badge {% if booking.status == 'active' %}ongoing{% else %}completed{% endif %}">
-                {{ booking.status | title }}
-            </span>
-        </div>
-    </div>
 
-    <!-- Notice -->
-    <div style="background:rgba(79,70,229,0.1); border:1px solid rgba(79,70,229,0.25); border-radius:12px;
-        padding:1rem 1.25rem; text-align:left; margin-bottom:1.5rem; font-size:0.85rem; color:var(--text-muted);">
-        <i class="fa-solid fa-circle-info" style="color:var(--primary-light); margin-right:6px;"></i>
-        Please arrive on time. If you finish early, check out from the History page to free the slot.
-    </div>
-    {% endif %}
-
-    <!-- Action buttons -->
-    <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;">
-        <a href="/" class="btn btn-primary btn-lg">
-            <i class="fa-solid fa-gauge-high"></i> Dashboard
-        </a>
-        <a href="/history" class="btn btn-outline btn-lg">
-            <i class="fa-solid fa-clock-rotate-left"></i> View History
-        </a>
+        <div class="d-grid d-sm-flex justify-content-sm-center gap-2 mt-4">
+            <a href="/find-parking" class="btn btn-primary">Find More Slots</a>
+            <a href="/history" class="btn btn-outline-secondary">View History</a>
+        </div>
     </div>
 </div>
 {% endblock %}
