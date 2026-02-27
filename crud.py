@@ -69,9 +69,9 @@ def seed_parking_slots(db: Session):
         return existing
     
     zones = {
-        "A": {"price": 80.0, "count": 6, "label": "Premium"},
-        "B": {"price": 50.0, "count": 8, "label": "Standard"},
-        "C": {"price": 30.0, "count": 6, "label": "Economy"},
+        "A": {"price": 25.0, "count": 6, "label": "Premium"},
+        "B": {"price": 15.0, "count": 8, "label": "Standard"},
+        "C": {"price": 10.0, "count": 6, "label": "Economy"},
     }
     
     count = 0

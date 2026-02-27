@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, Form, Request
+from fastapi import FastAPI, Depends, Form, Request, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -11,6 +11,10 @@ import models
 import crud
 from ai_logic import recommend_best_slot, calculate_slot_score
 from schemas import BookingCreate
+from mock_auth import (
+    create_mock_user, authenticate_user, get_user_by_email,
+    update_user_vehicle, create_session, get_session_user
+)
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -20,42 +24,106 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # ─────────────────────────────────────────
-#  Dashboard
+#  Login / Auth Helpers
+# ─────────────────────────────────────────
+
+def get_current_user(session_id: Optional[str] = Cookie(None)):
+    if session_id:
+        return get_session_user(session_id)
+    return None
+
+# ─────────────────────────────────────────
+#  Login Page
 # ─────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)
-def dashboard(request: Request, db: Session = Depends(get_db)):
-    # Auto-seed on first run
-    if db.query(models.ParkingSlot).count() == 0:
-        crud.seed_parking_slots(db)
+def home(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
 
-    slots = crud.get_all_slots(db)
-    total_slots = len(slots)
-    occupied = len([s for s in slots if s.is_occupied])
-    available = total_slots - occupied
+@app.post("/login", response_class=HTMLResponse)
+def login(request: Request, email: str = Form(...), name: str = Form(...)):
+    user = get_user_by_email(email)
+    if not user:
+        user = create_mock_user(name, email)
+    
+    session_id = create_session(email)
+    response = RedirectResponse(url="/vehicle-type", status_code=303)
+    response.set_cookie("session_id", session_id, max_age=86400)
+    return response
 
-    # Group by zone for the progress bars
-    zone_stats = {}
-    for s in slots:
-        z = s.zone
-        if z not in zone_stats:
-            zone_stats[z] = {"total": 0, "occupied": 0}
-        zone_stats[z]["total"] += 1
-        if s.is_occupied:
-            zone_stats[z]["occupied"] += 1
-
-    return templates.TemplateResponse("index.html", {
+# ─────────────────────────────────────────
+#  Vehicle Type Selection
+# ─────────────────────────────────────────
+@app.get("/vehicle-type", response_class=HTMLResponse)
+def vehicle_type_page(request: Request, session_id: Optional[str] = Cookie(None)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    if user.vehicle_type:
+        return RedirectResponse(url="/find-parking", status_code=303)
+    
+    return templates.TemplateResponse("vehicle-type.html", {
         "request": request,
-        "total_slots": total_slots,
-        "occupied": occupied,
-        "available": available,
-        "zone_stats": zone_stats,
+        "user": user
     })
+
+@app.post("/vehicle-type", response_class=HTMLResponse)
+def set_vehicle_type(request: Request, session_id: Optional[str] = Cookie(None), vehicle_type: str = Form(...)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    update_user_vehicle(user.email, vehicle_type)
+    return RedirectResponse(url="/find-parking", status_code=303)
+
+# ─────────────────────────────────────────
+#  Dashboard
+# ─────────────────────────────────────────
 
 # ─────────────────────────────────────────
 #  Slots Listing
 # ─────────────────────────────────────────
+@app.get("/find-parking", response_class=HTMLResponse)
+def find_parking(request: Request, session_id: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
+    # Auto-seed on first run
+    if db.query(models.ParkingSlot).count() == 0:
+        crud.seed_parking_slots(db)
+    
+    slots = crud.get_all_slots(db)
+    
+    # Calculate scores for all slots
+    slots_with_scores = []
+    for s in slots:
+        entry = {c.name: getattr(s, c.name) for c in s.__table__.columns}
+        entry["score"] = calculate_slot_score(s)
+        slots_with_scores.append(entry)
+    
+    # Get top 3 recommendations (only available slots)
+    available_slots = [s for s in slots_with_scores if not s["is_occupied"]]
+    top_3 = sorted(available_slots, key=lambda x: x["score"], reverse=True)[:3]
+    
+    # Get all available slots grouped by zone
+    all_available = available_slots
+    zones = sorted(set(s["zone"] for s in all_available))
+    
+    return templates.TemplateResponse("find-parking.html", {
+        "request": request,
+        "user": user,
+        "top_recommendations": top_3,
+        "all_available": all_available,
+        "zones": zones,
+    })
+
 @app.get("/slots", response_class=HTMLResponse)
-def show_slots(request: Request, zone: Optional[str] = None, db: Session = Depends(get_db)):
+def show_all_slots(request: Request, session_id: Optional[str] = Cookie(None), zone: Optional[str] = None, db: Session = Depends(get_db)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
     slots = crud.get_all_slots(db)
     zones = sorted(set(s.zone for s in slots))
 
@@ -69,35 +137,23 @@ def show_slots(request: Request, zone: Optional[str] = None, db: Session = Depen
 
     return templates.TemplateResponse("slots.html", {
         "request": request,
+        "user": user,
         "slots": slots_with_scores,
         "zones": zones,
         "active_zone": zone,
     })
 
-# ─────────────────────────────────────────
-#  AI Recommendation
-# ─────────────────────────────────────────
-@app.get("/recommended", response_class=HTMLResponse)
-def get_recommended(request: Request, db: Session = Depends(get_db)):
-    slots = crud.get_all_slots(db)
-    best_slot = recommend_best_slot(slots)
-    score = calculate_slot_score(best_slot) if best_slot else 0
-
-    return templates.TemplateResponse("recommendation.html", {
-        "request": request,
-        "best_slot": best_slot,
-        "score": score,
-    })
-
-# ─────────────────────────────────────────
-#  Booking Form
-# ─────────────────────────────────────────
 @app.get("/booking/{slot_id}", response_class=HTMLResponse)
-def booking_form(slot_id: int, request: Request, db: Session = Depends(get_db)):
+def booking_form(slot_id: int, request: Request, session_id: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
     slot = crud.get_slot_by_id(db, slot_id)
     now_str = datetime.utcnow().strftime("%Y-%m-%dT%H:%M")
     return templates.TemplateResponse("booking.html", {
         "request": request,
+        "user": user,
         "slot": slot,
         "now_str": now_str,
     })
@@ -106,6 +162,7 @@ def booking_form(slot_id: int, request: Request, db: Session = Depends(get_db)):
 def confirm_booking(
     slot_id: int,
     request: Request,
+    session_id: Optional[str] = Cookie(None),
     db: Session = Depends(get_db),
     user_name: str = Form(...),
     phone_number: str = Form(""),
@@ -114,6 +171,10 @@ def confirm_booking(
     start_time: str = Form(...),
     end_time: str = Form(""),
 ):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
     # Parse datetimes
     try:
         start_dt = datetime.fromisoformat(start_time)
@@ -139,20 +200,19 @@ def confirm_booking(
     booking = crud.create_booking(db, booking_data)
     return RedirectResponse(url=f"/booking/confirm/{booking.id}", status_code=303)
 
-# ─────────────────────────────────────────
-#  Booking Confirmation Page
-# ─────────────────────────────────────────
 @app.get("/booking/confirm/{booking_id}", response_class=HTMLResponse)
-def booking_confirmation(booking_id: int, request: Request, db: Session = Depends(get_db)):
+def booking_confirmation(booking_id: int, request: Request, session_id: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
     booking = crud.get_booking_by_id(db, booking_id)
     return templates.TemplateResponse("confirmation.html", {
         "request": request,
+        "user": user,
         "booking": booking,
     })
 
-# ─────────────────────────────────────────
-#  End Booking / Check Out
-# ─────────────────────────────────────────
 @app.post("/end-booking/{booking_id}")
 def end_booking(booking_id: int, db: Session = Depends(get_db)):
     booking = crud.end_booking(db, booking_id)
@@ -160,16 +220,24 @@ def end_booking(booking_id: int, db: Session = Depends(get_db)):
         return {"status": "success", "booking_id": booking.id, "total_cost": booking.total_cost}
     return {"status": "error", "message": "Booking not found"}
 
-# ─────────────────────────────────────────
-#  History
-# ─────────────────────────────────────────
 @app.get("/history", response_class=HTMLResponse)
-def booking_history(request: Request, db: Session = Depends(get_db)):
+def booking_history(request: Request, session_id: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
+    user = get_session_user(session_id)
+    if not user:
+        return RedirectResponse(url="/", status_code=303)
+    
     bookings = crud.get_booking_history(db)
     return templates.TemplateResponse("history.html", {
         "request": request,
+        "user": user,
         "bookings": bookings,
     })
+
+@app.get("/logout", response_class=HTMLResponse)
+def logout():
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("session_id")
+    return response
 
 # ─────────────────────────────────────────
 #  Seed Data (also auto-runs on /)

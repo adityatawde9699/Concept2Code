@@ -1,73 +1,66 @@
 {% extends "base.html" %}
-{% block title %}Parking Slots — ParkWise{% endblock %}
+
+{% block title %}All Slots - ParkWise{% endblock %}
 
 {% block content %}
-<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem;" class="fade-in-up">
-    <div>
-        <h1 class="section-title">Parking Slots</h1>
-        <p class="section-subtitle">Click any available slot to book it instantly.</p>
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">All Parking Slots</h1>
+        <p class="page-subtitle">View and book from all available slots</p>
     </div>
-    <a href="javascript:location.reload()" class="btn btn-outline btn-sm">
-        <i class="fa-solid fa-rotate"></i> Refresh
-    </a>
-</div>
-
-<!-- Zone Filter Tabs -->
-<div class="zone-tabs fade-in-up">
-    <a href="/slots" class="zone-tab {% if not active_zone %}active{% endif %}">All Zones</a>
-    {% for z in zones %}
-    <a href="/slots?zone={{ z }}" class="zone-tab {% if active_zone == z %}active{% endif %}">
-        Zone {{ z }}
-    </a>
-    {% endfor %}
-</div>
-
-<!-- Slot Grid -->
-<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem;">
-    {% for slot in slots %}
-    <div class="slot-card {% if slot.is_occupied %}occupied{% else %}available{% endif %}"
-         {% if not slot.is_occupied %}data-href="/booking/{{ slot.id }}"{% endif %}>
-        <!-- Slot Header -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-            <div class="slot-number">{{ slot.slot_number }}</div>
-            <span class="status-badge {% if slot.is_occupied %}occupied{% else %}available{% endif %}">
-                {% if slot.is_occupied %}
-                    <i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Occupied
-                {% else %}
-                    <i class="fa-solid fa-circle" style="font-size:0.5rem;"></i> Free
-                {% endif %}
-            </span>
-        </div>
-
-        <!-- Slot Info -->
-        <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">
-            <i class="fa-solid fa-map-pin" style="color:var(--primary-light); margin-right:4px;"></i>
-            Zone <strong style="color:var(--text);">{{ slot.zone }}</strong>
-        </div>
-        <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.5rem;">
-            <i class="fa-solid fa-indian-rupee-sign" style="color:#34d399; margin-right:4px;"></i>
-            <strong style="color:var(--text);">₹{{ slot.price_per_hour }}</strong> / hr
-        </div>
-        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">
-            <i class="fa-solid fa-star" style="color:#fbbf24; margin-right:4px;"></i>
-            Score: {{ slot.score }}
-        </div>
-
-        {% if not slot.is_occupied %}
-        <a href="/booking/{{ slot.id }}" class="btn btn-primary btn-sm" style="width:100%; justify-content:center;">
-            <i class="fa-solid fa-calendar-check"></i> Book Now
+    
+    <div class="zone-filters">
+        <a href="/slots" class="zone-filter-btn {% if not active_zone %}active{% endif %}">
+            All Zones
         </a>
-        {% else %}
-        <div style="color:var(--text-muted); font-size:0.8rem; text-align:center; padding:0.4rem 0;">
-            <i class="fa-solid fa-lock"></i> Unavailable
+        {% for z in zones %}
+        <a href="/slots?zone={{ z }}" class="zone-filter-btn {% if active_zone == z %}active{% endif %}">
+            Zone {{ z }}
+        </a>
+        {% endfor %}
+    </div>
+
+    {% if slots %}
+    <div class="slots-grid-full">
+        {% for slot in slots %}
+        <div class="slot-card-full">
+            <div class="slot-card-header">
+                <h3 class="slot-number-large">{{ slot.slot_number }}</h3>
+                <div class="slot-zone">{{ slot.zone }}</div>
+            </div>
+
+            <div class="slot-card-body">
+                {% if slot.is_occupied %}
+                    <div class="status-occupied-large">Occupied</div>
+                {% else %}
+                    <div class="status-available-large">Available</div>
+                {% endif %}
+
+                <div class="slot-info-row">
+                    <span>Hourly Rate</span>
+                    <strong>₹{{ slot.price_per_hour }}</strong>
+                </div>
+
+                <div class="slot-info-row">
+                    <span>Quality Score</span>
+                    <strong>{{ slot.score }}/100</strong>
+                </div>
+            </div>
+
+            <div class="slot-card-footer">
+                {% if not slot.is_occupied %}
+                <a href="/booking/{{ slot.id }}" class="btn btn-primary btn-full">Book Slot</a>
+                {% else %}
+                <button class="btn btn-disabled btn-full" disabled>Occupied</button>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
+        {% endfor %}
     </div>
     {% else %}
-    <div style="grid-column: 1/-1; text-align:center; padding:4rem; color:var(--text-muted);">
-        <i class="fa-solid fa-circle-info" style="font-size:2.5rem; margin-bottom:1rem; display:block; color:var(--primary-light);"></i>
-        No slots found for this filter. <a href="/slots" style="color:var(--primary-light);">Show all</a>
+    <div class="empty-state">
+        <p>No slots available in this zone</p>
     </div>
-    {% endfor %}
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,107 +1,98 @@
 {% extends "base.html" %}
-{% block title %}Book Slot — ParkWise{% endblock %}
+
+{% block title %}Book Parking - ParkWise{% endblock %}
 
 {% block content %}
-<div style="max-width:600px; margin:0 auto;" class="fade-in-up">
-    <div style="margin-bottom:1.5rem;">
-        <a href="/slots" style="color:var(--text-muted); text-decoration:none; font-size:0.85rem;">
-            <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i> Back to Slots
-        </a>
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Book Your Parking</h1>
+        <p class="page-subtitle">Complete your reservation</p>
     </div>
-    <h1 class="section-title">Reserve a Slot</h1>
-    <p class="section-subtitle">Fill in your details to complete the booking.</p>
 
-    {% if slot %}
-    <!-- Slot Summary Card -->
-    <div class="glass-card" style="padding:1.25rem 1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:1.25rem;">
-        <div style="width:56px; height:56px; border-radius:12px; background:rgba(79,70,229,0.15);
-            border:1px solid rgba(79,70,229,0.3); display:flex; align-items:center; justify-content:center;
-            font-size:1.5rem; font-weight:800; color:#818cf8; flex-shrink:0;">
-            {{ slot.slot_number }}
-        </div>
-        <div style="flex:1;">
-            <div style="font-weight:700; color:var(--text-strong);">Slot {{ slot.slot_number }}</div>
-            <div style="font-size:0.83rem; color:var(--text-muted);">
-                Zone {{ slot.zone }} &nbsp;·&nbsp;
-                <span style="color:#34d399;"><i class="fa-solid fa-indian-rupee-sign"></i> {{ slot.price_per_hour }} / hr</span>
+    {% if slot and not slot.is_occupied %}
+    <div class="booking-wrapper">
+        <div class="slot-summary">
+            <div class="summary-content">
+                <div class="summary-slot">
+                    <span class="summary-number">{{ slot.slot_number }}</span>
+                    <span class="summary-zone">{{ slot.zone }}</span>
+                </div>
+                <div class="summary-details">
+                    <h3>Slot {{ slot.slot_number }}</h3>
+                    <p>Rate: <strong>₹{{ slot.price_per_hour }}/hr</strong></p>
+                </div>
             </div>
         </div>
-        {% if not slot.is_occupied %}
-        <span class="status-badge available"><i class="fa-solid fa-circle" style="font-size:0.45rem;"></i> Available</span>
-        {% else %}
-        <span class="status-badge occupied"><i class="fa-solid fa-circle" style="font-size:0.45rem;"></i> Occupied</span>
-        {% endif %}
-    </div>
 
-    {% if slot.is_occupied %}
-    <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:12px;
-        padding:1rem 1.25rem; color:#f87171; font-size:0.9rem;">
-        <i class="fa-solid fa-triangle-exclamation"></i> This slot is currently occupied. Please choose another slot.
-        <a href="/slots" style="color:#fca5a5; margin-left:8px;">Browse available slots →</a>
+        <form method="POST" action="/booking/{{ slot.id }}" class="booking-form">
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" name="user_name" placeholder="Your name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="phone_number" placeholder="+91 98765 43210">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Vehicle Type</label>
+                    <select name="vehicle_type">
+                        {% for vt in slot.vehicle_types.split(',') %}
+                        <option value="{{ vt.strip() }}">{{ vt.strip() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Vehicle Number</label>
+                    <input type="text" name="vehicle_number" placeholder="MH 12 AB 1234">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Time *</label>
+                    <input type="datetime-local" name="start_time" value="{{ now_str }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>End Time</label>
+                    <input type="datetime-local" name="end_time" id="end_time">
+                </div>
+            </div>
+
+            <div class="price-calculator" id="priceCalc">
+                <p class="calc-text">Select end time to see estimated cost</p>
+                <p class="calc-price" id="estimatedPrice">—</p>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large">Confirm Booking</button>
+            <a href="/slots" class="btn btn-secondary btn-large">Cancel</a>
+        </form>
     </div>
     {% else %}
-
-    <!-- Booking Form -->
-    <form method="POST" action="/booking/{{ slot.id }}" class="glass-card" style="padding:2rem;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-            <!-- Name -->
-            <div style="grid-column:1/-1;">
-                <label class="form-label"><i class="fa-solid fa-user" style="margin-right:4px;"></i> Full Name *</label>
-                <input type="text" name="user_name" class="form-control" placeholder="e.g. Aditya Tawde" required style="width:100%;">
-            </div>
-            <!-- Phone -->
-            <div>
-                <label class="form-label"><i class="fa-solid fa-phone" style="margin-right:4px;"></i> Phone Number</label>
-                <input type="tel" name="phone_number" class="form-control" placeholder="+91 98765 43210" style="width:100%;">
-            </div>
-            <!-- Vehicle Type -->
-            <div>
-                <label class="form-label"><i class="fa-solid fa-car" style="margin-right:4px;"></i> Vehicle Type</label>
-                <select name="vehicle_type" class="form-control form-select" style="width:100%;">
-                    {% for vt in slot.vehicle_types.split(',') %}
-                    <option value="{{ vt.strip() }}">{{ vt.strip() }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <!-- Vehicle Number -->
-            <div style="grid-column:1/-1;">
-                <label class="form-label"><i class="fa-solid fa-id-card" style="margin-right:4px;"></i> Vehicle Number</label>
-                <input type="text" name="vehicle_number" class="form-control" placeholder="MH 12 AB 1234" style="width:100%;">
-            </div>
-            <!-- Start Time -->
-            <div>
-                <label class="form-label"><i class="fa-solid fa-clock" style="margin-right:4px;"></i> Start Time *</label>
-                <input type="datetime-local" name="start_time" id="start_time" class="form-control"
-                    value="{{ now_str }}" required style="width:100%;">
-            </div>
-            <!-- End Time -->
-            <div>
-                <label class="form-label"><i class="fa-solid fa-flag-checkered" style="margin-right:4px;"></i> End Time</label>
-                <input type="datetime-local" name="end_time" id="end_time" class="form-control" style="width:100%;">
-            </div>
-        </div>
-
-        <!-- Price Estimate -->
-        <div id="price_rate" data-rate="{{ slot.price_per_hour }}"></div>
-        <div class="price-estimate" style="margin-top:1.5rem;">
-            <div>
-                <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Estimated Cost</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);" id="estimated_duration">Select end time to calculate</div>
-            </div>
-            <div class="price-value" id="estimated_price">—</div>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:1.5rem; justify-content:center;">
-            <i class="fa-solid fa-calendar-check"></i> Confirm Booking
-        </button>
-    </form>
-    {% endif %}
-
-    {% else %}
-    <div class="glass-card" style="padding:3rem; text-align:center; color:var(--text-muted);">
-        <i class="fa-solid fa-circle-xmark" style="font-size:3rem; color:var(--danger); display:block; margin-bottom:1rem;"></i>
-        Slot not found. <a href="/slots" style="color:var(--primary-light);">Go back to slots</a>
+    <div class="empty-state">
+        <h2>Slot Not Available</h2>
+        <p>This slot is not available for booking. Please choose another one.</p>
+        <a href="/slots" class="btn btn-primary">Browse Slots</a>
     </div>
     {% endif %}
 </div>
+
+<script>
+const ratePerHour = {{ slot.price_per_hour if slot else 0 }};
+document.getElementById('end_time')?.addEventListener('change', function() {
+    const start = document.querySelector('[name="start_time"]').value;
+    const end = this.value;
+    if (start && end) {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const hours = (endDate - startDate) / (1000 * 60 * 60);
+        const cost = (hours * ratePerHour).toFixed(2);
+        document.getElementById('estimatedPrice').textContent = '₹' + cost;
+    }
+});
+</script>
 {% endblock %}

@@ -3,47 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="ParkWise — Smart parking availability and reservations. Find and book parking slots in real time.">
-    <title>{% block title %}ParkWise — Smart Parking{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>{% block title %}ParkWise{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container" style="display:flex; align-items:center; justify-content:space-between;">
-            <a class="navbar-brand" href="/">
-                <i class="fa-solid fa-square-parking" style="-webkit-text-fill-color: initial; color: #818cf8; margin-right:6px;"></i>
-                ParkWise
-            </a>
-            <div style="display:flex; gap:0.25rem; align-items:center;">
-                <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
-                    <i class="fa-solid fa-gauge-high"></i> Dashboard
-                </a>
-                <a href="/slots" class="nav-link {% if request.url.path == '/slots' %}active{% endif %}">
-                    <i class="fa-solid fa-th-large"></i> Slots
-                </a>
-                <a href="/recommended" class="nav-link {% if request.url.path == '/recommended' %}active{% endif %}">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Recommend
-                </a>
-                <a href="/history" class="nav-link {% if request.url.path == '/history' %}active{% endif %}">
-                    <i class="fa-solid fa-clock-rotate-left"></i> History
-                </a>
-            </div>
+    <header class="header">
+        <div class="container">
+            <a href="/find-parking" class="logo">ParkWise</a>
+            <nav class="nav">
+                <a href="/find-parking" class="nav-link">Find Slot</a>
+                <a href="/slots" class="nav-link">All Slots</a>
+                <a href="/history" class="nav-link">History</a>
+                {% if user %}
+                <div class="nav-user">
+                    <span class="user-name">{{ user.name }}</span>
+                    <a href="/logout" class="nav-link logout-link">Logout</a>
+                </div>
+                {% endif %}
+            </nav>
         </div>
-    </nav>
+    </header>
 
-    <!-- Main Content -->
-    <div class="container mt-page">
+    <main class="main">
         {% block content %}{% endblock %}
-    </div>
-
-    <!-- Footer -->
-    <footer>
-        <p><i class="fa-solid fa-square-parking" style="color:#818cf8;"></i> <strong style="color:#e2e8f0;">ParkWise</strong> &mdash; Smart Parking, Smarter Cities &nbsp;|&nbsp; &copy; 2026</p>
-    </footer>
+    </main>
 
     <script src="{{ url_for('static', path='/js/script.js') }}"></script>
 </body>
