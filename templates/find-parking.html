@@ -30,11 +30,14 @@
                     </div>
                 </div>
                 
-                {% if not slot.is_occupied %}
-                <a href="/booking/{{ slot.id }}" class="btn btn-primary">Book Now</a>
-                {% else %}
-                <button class="btn btn-disabled" disabled>Not Available</button>
-                {% endif %}
+                <div class="slot-actions">
+                    {% if not slot.is_occupied %}
+                    <a href="/booking/{{ slot.id }}" class="btn btn-primary btn-full">Book Now</a>
+                    {% else %}
+                    <button class="btn btn-disabled btn-full" disabled>Not Available</button>
+                    {% endif %}
+                    <a href="https://maps.app.goo.gl/JMkKwNDx2sVpmPBGA" target="_blank" class="btn btn-maps">📍 Maps</a>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -61,11 +64,14 @@
                         <h4>{{ slot.slot_number }}</h4>
                         <p class="slot-price">₹{{ slot.price_per_hour }}/hr</p>
                     </div>
-                    {% if not slot.is_occupied %}
-                    <a href="/booking/{{ slot.id }}" class="btn-small">Book</a>
-                    {% else %}
-                    <span class="status-occupied">Occupied</span>
-                    {% endif %}
+                    <div class="slot-right">
+                        {% if not slot.is_occupied %}
+                        <a href="/booking/{{ slot.id }}" class="btn-small">Book</a>
+                        {% else %}
+                        <span class="status-occupied">Occupied</span>
+                        {% endif %}
+                        <a href="https://maps.app.goo.gl/JMkKwNDx2sVpmPBGA" target="_blank" class="btn-maps-small">📍</a>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
