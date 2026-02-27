@@ -1,35 +1,105 @@
 {% extends "base.html" %}
-
-{% block title %}Recommendation - ParkWise{% endblock %}
+{% block title %}AI Recommendation — ParkWise{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <h1 class="mb-4">🎯 Recommended Slot</h1>
-        
-        {% if best_slot %}
-        <div class="card border-success mb-4">
-            <div class="card-body">
-                <h5 class="card-title text-success">Best Match!</h5>
-                <p class="card-text"><strong>Slot:</strong> {{ best_slot.slot_number }}</p>
-                <p class="card-text"><strong>Zone:</strong> {{ best_slot.zone }}</p>
-                <p class="card-text">
-                    {% if best_slot.is_occupied %}
-                        <span class="badge bg-danger">Occupied</span>
-                    {% else %}
-                        <span class="badge bg-success">Available Now</span>
-                    {% endif %}
-                </p>
-                {% if not best_slot.is_occupied %}
-                <a href="/booking/{{ best_slot.id }}" class="btn btn-primary">Book This Slot</a>
+<div style="max-width:560px; margin:0 auto;" class="fade-in-up">
+    <div style="margin-bottom:1.5rem;">
+        <a href="/slots" style="color:var(--text-muted); text-decoration:none; font-size:0.85rem;">
+            <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i> Back to Slots
+        </a>
+    </div>
+
+    <h1 class="section-title">AI Recommendation</h1>
+    <p class="section-subtitle">Our algorithm scores every slot on zone priority, availability, and recency to find your best option.</p>
+
+    {% if best_slot %}
+    <!-- Best Slot Card -->
+    <div class="glass-card" style="padding:2rem; border-color:rgba(16,185,129,0.35); margin-bottom:1.25rem; position:relative; overflow:hidden;">
+        <!-- Glow accent -->
+        <div style="position:absolute; top:0; left:0; right:0; height:3px;
+            background:linear-gradient(90deg, var(--success), var(--accent));"></div>
+
+        <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+            <div style="width:64px; height:64px; border-radius:14px; background:rgba(16,185,129,0.15);
+                border:1px solid rgba(16,185,129,0.35); display:flex; align-items:center; justify-content:center;
+                font-size:1.6rem; font-weight:800; color:#34d399; flex-shrink:0;">
+                {{ best_slot.slot_number }}
+            </div>
+            <div>
+                <div style="font-size:0.78rem; color:#34d399; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">
+                    <i class="fa-solid fa-trophy"></i> Best Match
+                </div>
+                <div style="font-size:1.3rem; font-weight:800; color:var(--text-strong);">Slot {{ best_slot.slot_number }}</div>
+                <div style="color:var(--text-muted); font-size:0.85rem;">Zone {{ best_slot.zone }} Parking</div>
+            </div>
+            <div style="margin-left:auto; text-align:right;">
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Score</div>
+                <div style="font-size:2rem; font-weight:800; background:linear-gradient(135deg, #34d399, #22d3ee);
+                    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+                    {{ score }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.75rem; margin-bottom:1.5rem;">
+            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem; text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Zone</div>
+                <div style="font-weight:700; color:var(--text-strong);">{{ best_slot.zone }}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem; text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Rate / hr</div>
+                <div style="font-weight:700; color:#34d399;">₹{{ best_slot.price_per_hour }}</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:0.75rem; text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">Status</div>
+                {% if best_slot.is_occupied %}
+                <span class="status-badge occupied" style="font-size:0.7rem; padding:0.2rem 0.5rem;">Occupied</span>
+                {% else %}
+                <span class="status-badge available" style="font-size:0.7rem; padding:0.2rem 0.5rem;">Free</span>
                 {% endif %}
             </div>
         </div>
-        {% else %}
-        <p>No slots available.</p>
-        {% endif %}
 
-        <a href="/slots" class="btn btn-secondary">View All Slots</a>
+        {% if not best_slot.is_occupied %}
+        <a href="/booking/{{ best_slot.id }}" class="btn btn-success btn-lg" style="width:100%; justify-content:center;">
+            <i class="fa-solid fa-calendar-check"></i> Book This Slot
+        </a>
+        {% else %}
+        <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:10px;
+            padding:0.9rem; color:#f87171; font-size:0.85rem; text-align:center;">
+            <i class="fa-solid fa-clock"></i> Best available slot is currently occupied. Try browsing other slots.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- How it works -->
+    <div class="glass-card" style="padding:1.25rem 1.5rem;">
+        <div style="font-weight:700; color:var(--text-strong); font-size:0.9rem; margin-bottom:0.75rem;">
+            <i class="fa-solid fa-circle-info" style="color:var(--primary-light); margin-right:6px;"></i>
+            How Scores Are Calculated
+        </div>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; font-size:0.83rem; color:var(--text-muted);">
+            <div><i class="fa-solid fa-check" style="color:#34d399; margin-right:6px;"></i>Zone A: +100 points (premium, closest access)</div>
+            <div><i class="fa-solid fa-check" style="color:#34d399; margin-right:6px;"></i>Zone B: +70 points (standard access)</div>
+            <div><i class="fa-solid fa-check" style="color:#34d399; margin-right:6px;"></i>Zone C: +40 points (economy, furthest)</div>
+            <div><i class="fa-solid fa-check" style="color:#34d399; margin-right:6px;"></i>Available now: +50 bonus points</div>
+            <div><i class="fa-solid fa-check" style="color:#34d399; margin-right:6px;"></i>Freeing soon (≤15 min): +30 bonus points</div>
+        </div>
+    </div>
+
+    {% else %}
+    <div class="glass-card" style="text-align:center; padding:4rem;">
+        <i class="fa-solid fa-circle-xmark" style="font-size:3rem; color:var(--danger); display:block; margin-bottom:1rem;"></i>
+        <p style="color:var(--text-muted);">No slots available to recommend right now.</p>
+        <a href="/slots" class="btn btn-primary" style="margin-top:1rem;">Browse All Slots</a>
+    </div>
+    {% endif %}
+
+    <div style="text-align:center; margin-top:1.25rem;">
+        <a href="/slots" class="btn btn-outline">
+            <i class="fa-solid fa-th-large"></i> Browse All Slots
+        </a>
     </div>
 </div>
 {% endblock %}

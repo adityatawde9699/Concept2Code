@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
@@ -10,6 +10,8 @@ class ParkingSlot(Base):
     slot_number = Column(String, unique=True, index=True)
     is_occupied = Column(Boolean, default=False)
     zone = Column(String)
+    price_per_hour = Column(Float, default=50.0)
+    vehicle_types = Column(String, default="Car,Bike,SUV")  # comma-separated
     last_occupied_time = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     
@@ -21,7 +23,12 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, index=True)
     slot_id = Column(Integer, ForeignKey("parking_slots.id"))
     user_name = Column(String)
+    phone_number = Column(String, nullable=True)
+    vehicle_type = Column(String, nullable=True)
+    vehicle_number = Column(String, nullable=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime, nullable=True)
+    total_cost = Column(Float, nullable=True)
+    status = Column(String, default="active")  # active | completed
     
     slot = relationship("ParkingSlot", back_populates="bookings")
