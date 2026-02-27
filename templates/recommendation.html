@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendation - ParkWise{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h1 class="mb-4">🎯 Recommended Slot</h1>
+        
+        {% if best_slot %}
+        <div class="card border-success mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-success">Best Match!</h5>
+                <p class="card-text"><strong>Slot:</strong> {{ best_slot.slot_number }}</p>
+                <p class="card-text"><strong>Zone:</strong> {{ best_slot.zone }}</p>
+                <p class="card-text">
+                    {% if best_slot.is_occupied %}
+                        <span class="badge bg-danger">Occupied</span>
+                    {% else %}
+                        <span class="badge bg-success">Available Now</span>
+                    {% endif %}
+                </p>
+                {% if not best_slot.is_occupied %}
+                <a href="/booking/{{ best_slot.id }}" class="btn btn-primary">Book This Slot</a>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <p>No slots available.</p>
+        {% endif %}
+
+        <a href="/slots" class="btn btn-secondary">View All Slots</a>
+    </div>
+</div>
+{% endblock %}

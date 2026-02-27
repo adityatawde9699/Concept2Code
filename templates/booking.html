@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Book Slot - ParkWise{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h1 class="mb-4">Book Parking Slot</h1>
+        
+        {% if slot %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Slot {{ slot.slot_number }}</h5>
+                <p class="card-text">Zone: <strong>{{ slot.zone }}</strong></p>
+                <p class="card-text">Status: 
+                    {% if slot.is_occupied %}
+                        <span class="badge bg-danger">Occupied</span>
+                    {% else %}
+                        <span class="badge bg-success">Available</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <form id="bookingForm">
+            <div class="mb-3">
+                <label for="userName" class="form-label">Your Name</label>
+                <input type="text" class="form-control" id="userName" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Confirm Booking</button>
+        </form>
+        {% else %}
+        <p>Slot not found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const userName = document.getElementById('userName').value;
+    const slotId = '{{ slot.id }}';
+    
+    fetch(`/booking/${slotId}?user_name=${userName}`, {
+        method: 'POST'
+    })
+    .then(r => r.json())
+    .then(data => {
+        alert('Booking confirmed!');
+        window.location.href = '/history';
+    });
+});
+</script>
+{% endblock %}

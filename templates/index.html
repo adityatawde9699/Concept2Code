@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ParkWise{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1>🅿️ ParkWise Dashboard</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Slots</h5>
+                <h2>{{ total_slots }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Available</h5>
+                <h2>{{ available }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">Occupied</h5>
+                <h2>{{ occupied }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <a href="/recommended" class="btn btn-lg btn-primary">🎯 Find Best Slot</a>
+        <a href="/slots" class="btn btn-lg btn-secondary">View All Slots</a>
+    </div>
+</div>
+{% endblock %}

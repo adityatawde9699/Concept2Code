@@ -1,0 +1,83 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.slot-card {
+    border: 2px solid #ddd;
+    cursor: pointer;
+}
+
+.slot-card.available {
+    border-color: #28a745;
+    background-color: #f0fdf4;
+}
+
+.slot-card.occupied {
+    border-color: #dc3545;
+    background-color: #fef2f2;
+    opacity: 0.7;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+}
+
+table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+h1 {
+    color: #333;
+    font-weight: bold;
+}
+
+.bg-primary {
+    background-color: #2563eb !important;
+}
+
+.bg-success {
+    background-color: #16a34a !important;
+}
+
+.bg-danger {
+    background-color: #dc2626 !important;
+}

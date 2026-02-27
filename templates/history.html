@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Booking History - ParkWise{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Booking History</h1>
+
+{% if bookings %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Slot</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.user_name }}</td>
+            <td>{{ booking.slot.slot_number }} (Zone {{ booking.slot.zone }})</td>
+            <td>{{ booking.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                {% if booking.end_time %}
+                    {{ booking.end_time.strftime('%Y-%m-%d %H:%M') }}
+                {% else %}
+                    <span class="badge bg-info">Ongoing</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if booking.end_time %}
+                    {{ ((booking.end_time - booking.start_time).total_seconds() / 60) | int }} min
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No bookings yet.</p>
+{% endif %}
+{% endblock %}

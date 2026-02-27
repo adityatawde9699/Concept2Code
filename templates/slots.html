@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Slots - ParkWise{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Parking Slots</h1>
+
+<div class="row">
+    {% for slot in slots %}
+    <div class="col-md-3 mb-3">
+        <div class="card slot-card {% if slot.is_occupied %}occupied{% else %}available{% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">Slot {{ slot.slot_number }}</h5>
+                <p class="card-text">Zone: <strong>{{ slot.zone }}</strong></p>
+                <p class="card-text">Score: <strong>{{ slot.score }}</strong></p>
+                <p class="card-text">
+                    {% if slot.is_occupied %}
+                        <span class="badge bg-danger">Occupied</span>
+                    {% else %}
+                        <span class="badge bg-success">Available</span>
+                    {% endif %}
+                </p>
+                {% if not slot.is_occupied %}
+                <a href="/booking/{{ slot.id }}" class="btn btn-sm btn-primary">Book Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
