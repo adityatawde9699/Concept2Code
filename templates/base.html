@@ -3,32 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ParkWise{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="description" content="ParkWise — Smart parking availability and reservations. Find and book parking slots in real time.">
+    <title>{% block title %}ParkWise — Smart Parking{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">🅿️ ParkWise</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/slots">Slots</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
-                </ul>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container" style="display:flex; align-items:center; justify-content:space-between;">
+            <a class="navbar-brand" href="/">
+                <i class="fa-solid fa-square-parking" style="-webkit-text-fill-color: initial; color: #818cf8; margin-right:6px;"></i>
+                ParkWise
+            </a>
+            <div style="display:flex; gap:0.25rem; align-items:center;">
+                <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-gauge-high"></i> Dashboard
+                </a>
+                <a href="/slots" class="nav-link {% if request.url.path == '/slots' %}active{% endif %}">
+                    <i class="fa-solid fa-th-large"></i> Slots
+                </a>
+                <a href="/recommended" class="nav-link {% if request.url.path == '/recommended' %}active{% endif %}">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Recommend
+                </a>
+                <a href="/history" class="nav-link {% if request.url.path == '/history' %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> History
+                </a>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-4">
+    <!-- Main Content -->
+    <div class="container mt-page">
         {% block content %}{% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Footer -->
+    <footer>
+        <p><i class="fa-solid fa-square-parking" style="color:#818cf8;"></i> <strong style="color:#e2e8f0;">ParkWise</strong> &mdash; Smart Parking, Smarter Cities &nbsp;|&nbsp; &copy; 2026</p>
+    </footer>
+
     <script src="{{ url_for('static', path='/js/script.js') }}"></script>
 </body>
 </html>

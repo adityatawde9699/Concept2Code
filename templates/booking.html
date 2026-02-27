@@ -1,54 +1,107 @@
 {% extends "base.html" %}
-
-{% block title %}Book Slot - ParkWise{% endblock %}
+{% block title %}Book Slot — ParkWise{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 offset-md-3">
-        <h1 class="mb-4">Book Parking Slot</h1>
-        
-        {% if slot %}
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Slot {{ slot.slot_number }}</h5>
-                <p class="card-text">Zone: <strong>{{ slot.zone }}</strong></p>
-                <p class="card-text">Status: 
-                    {% if slot.is_occupied %}
-                        <span class="badge bg-danger">Occupied</span>
-                    {% else %}
-                        <span class="badge bg-success">Available</span>
-                    {% endif %}
-                </p>
+<div style="max-width:600px; margin:0 auto;" class="fade-in-up">
+    <div style="margin-bottom:1.5rem;">
+        <a href="/slots" style="color:var(--text-muted); text-decoration:none; font-size:0.85rem;">
+            <i class="fa-solid fa-arrow-left" style="margin-right:4px;"></i> Back to Slots
+        </a>
+    </div>
+    <h1 class="section-title">Reserve a Slot</h1>
+    <p class="section-subtitle">Fill in your details to complete the booking.</p>
+
+    {% if slot %}
+    <!-- Slot Summary Card -->
+    <div class="glass-card" style="padding:1.25rem 1.5rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:1.25rem;">
+        <div style="width:56px; height:56px; border-radius:12px; background:rgba(79,70,229,0.15);
+            border:1px solid rgba(79,70,229,0.3); display:flex; align-items:center; justify-content:center;
+            font-size:1.5rem; font-weight:800; color:#818cf8; flex-shrink:0;">
+            {{ slot.slot_number }}
+        </div>
+        <div style="flex:1;">
+            <div style="font-weight:700; color:var(--text-strong);">Slot {{ slot.slot_number }}</div>
+            <div style="font-size:0.83rem; color:var(--text-muted);">
+                Zone {{ slot.zone }} &nbsp;·&nbsp;
+                <span style="color:#34d399;"><i class="fa-solid fa-indian-rupee-sign"></i> {{ slot.price_per_hour }} / hr</span>
+            </div>
+        </div>
+        {% if not slot.is_occupied %}
+        <span class="status-badge available"><i class="fa-solid fa-circle" style="font-size:0.45rem;"></i> Available</span>
+        {% else %}
+        <span class="status-badge occupied"><i class="fa-solid fa-circle" style="font-size:0.45rem;"></i> Occupied</span>
+        {% endif %}
+    </div>
+
+    {% if slot.is_occupied %}
+    <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:12px;
+        padding:1rem 1.25rem; color:#f87171; font-size:0.9rem;">
+        <i class="fa-solid fa-triangle-exclamation"></i> This slot is currently occupied. Please choose another slot.
+        <a href="/slots" style="color:#fca5a5; margin-left:8px;">Browse available slots →</a>
+    </div>
+    {% else %}
+
+    <!-- Booking Form -->
+    <form method="POST" action="/booking/{{ slot.id }}" class="glass-card" style="padding:2rem;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <!-- Name -->
+            <div style="grid-column:1/-1;">
+                <label class="form-label"><i class="fa-solid fa-user" style="margin-right:4px;"></i> Full Name *</label>
+                <input type="text" name="user_name" class="form-control" placeholder="e.g. Aditya Tawde" required style="width:100%;">
+            </div>
+            <!-- Phone -->
+            <div>
+                <label class="form-label"><i class="fa-solid fa-phone" style="margin-right:4px;"></i> Phone Number</label>
+                <input type="tel" name="phone_number" class="form-control" placeholder="+91 98765 43210" style="width:100%;">
+            </div>
+            <!-- Vehicle Type -->
+            <div>
+                <label class="form-label"><i class="fa-solid fa-car" style="margin-right:4px;"></i> Vehicle Type</label>
+                <select name="vehicle_type" class="form-control form-select" style="width:100%;">
+                    {% for vt in slot.vehicle_types.split(',') %}
+                    <option value="{{ vt.strip() }}">{{ vt.strip() }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Vehicle Number -->
+            <div style="grid-column:1/-1;">
+                <label class="form-label"><i class="fa-solid fa-id-card" style="margin-right:4px;"></i> Vehicle Number</label>
+                <input type="text" name="vehicle_number" class="form-control" placeholder="MH 12 AB 1234" style="width:100%;">
+            </div>
+            <!-- Start Time -->
+            <div>
+                <label class="form-label"><i class="fa-solid fa-clock" style="margin-right:4px;"></i> Start Time *</label>
+                <input type="datetime-local" name="start_time" id="start_time" class="form-control"
+                    value="{{ now_str }}" required style="width:100%;">
+            </div>
+            <!-- End Time -->
+            <div>
+                <label class="form-label"><i class="fa-solid fa-flag-checkered" style="margin-right:4px;"></i> End Time</label>
+                <input type="datetime-local" name="end_time" id="end_time" class="form-control" style="width:100%;">
             </div>
         </div>
 
-        <form id="bookingForm">
-            <div class="mb-3">
-                <label for="userName" class="form-label">Your Name</label>
-                <input type="text" class="form-control" id="userName" required>
+        <!-- Price Estimate -->
+        <div id="price_rate" data-rate="{{ slot.price_per_hour }}"></div>
+        <div class="price-estimate" style="margin-top:1.5rem;">
+            <div>
+                <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px;">Estimated Cost</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);" id="estimated_duration">Select end time to calculate</div>
             </div>
-            <button type="submit" class="btn btn-primary">Confirm Booking</button>
-        </form>
-        {% else %}
-        <p>Slot not found.</p>
-        {% endif %}
-    </div>
-</div>
+            <div class="price-value" id="estimated_price">—</div>
+        </div>
 
-<script>
-document.getElementById('bookingForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const userName = document.getElementById('userName').value;
-    const slotId = '{{ slot.id }}';
-    
-    fetch(`/booking/${slotId}?user_name=${userName}`, {
-        method: 'POST'
-    })
-    .then(r => r.json())
-    .then(data => {
-        alert('Booking confirmed!');
-        window.location.href = '/history';
-    });
-});
-</script>
+        <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:1.5rem; justify-content:center;">
+            <i class="fa-solid fa-calendar-check"></i> Confirm Booking
+        </button>
+    </form>
+    {% endif %}
+
+    {% else %}
+    <div class="glass-card" style="padding:3rem; text-align:center; color:var(--text-muted);">
+        <i class="fa-solid fa-circle-xmark" style="font-size:3rem; color:var(--danger); display:block; margin-bottom:1rem;"></i>
+        Slot not found. <a href="/slots" style="color:var(--primary-light);">Go back to slots</a>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}
